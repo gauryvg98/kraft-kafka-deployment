@@ -1,0 +1,3 @@
+EXTERNAL_IP = "51.159.112.120:9095"
+SASL_USERNAME = "admin"
+SASL_PASSWORD = "admin-secret"

@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+  labels:
+    app: kafka
+spec:
+  serviceName: "kafka"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+      - name: kafka
+        image: bitnami/kafka:latest
+        env:
+        - name: KAFKA_CFG_PROCESS_ROLES
+          value: "broker,controller"
+        - name: KAFKA_CFG_NODE_ID
+          value: "1"
+        - name: KAFKA_CFG_CONTROLLER_QUORUM_VOTERS
+          value: "1@kafka-0.kafka:9094"
+        - name: KAFKA_CFG_LISTENERS
+          value: "PLAINTEXT://0.0.0.0:9092,EXTERNAL://0.0.0.0:9093,CONTROLLER://0.0.0.0:9094,SASL_PLAINTEXT://0.0.0.0:9095"
+        - name: KAFKA_CFG_ADVERTISED_LISTENERS
+          value: "PLAINTEXT://kafka-0.kafka:9092,EXTERNAL://YOUR_EXTERNAL_IP:9093,SASL_PLAINTEXT://YOUR_EXTERNAL_IP:9095"  # Use Ingress host
+        - name: KAFKA_CFG_LOG_DIRS
+          value: "/bitnami/kafka/data"
+        - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
+          value: "true"
+        - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
+          value: "PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT,SASL_PLAINTEXT:SASL_PLAINTEXT"
+        - name: KAFKA_CFG_INTER_BROKER_LISTENER_NAME
+          value: "PLAINTEXT"
+        - name: KAFKA_CFG_CONTROLLER_LISTENER_NAMES
+          value: "CONTROLLER"
+        - name: KAFKA_CFG_SASL_ENABLED_MECHANISMS
+          value: "PLAIN"
+        - name: KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL
+          value: "PLAIN"
+        - name: KAFKA_CFG_LISTENER_NAME_SASL_PLAINTEXT_PLAIN_SASL_JAAS_CONFIG
+          value: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"admin\" password=\"admin-secret\" user_admin=\"admin-secret\";"
+      
+        volumeMounts:
+        - name: config
+          mountPath: /bitnami/kafka/config
+        - name: data
+          mountPath: /bitnami/kafka
+      volumes:
+      - name: config
+        configMap:
+          name: kafka-config
+      - name: data
+        emptyDir: {}

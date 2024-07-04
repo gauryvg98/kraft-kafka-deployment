@@ -1,0 +1,21 @@
+### NOT BEING USED
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kafka-ingress
+  namespace: kafka
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx  # Add this line
+  rules:
+  - host: YOUR_CLUSTER_URL  # This will be replaced by the actual cluster URL
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kafka
+            port:
+              number: 9093  # External access port
